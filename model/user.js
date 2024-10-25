@@ -29,9 +29,9 @@ const userSchema = mongoose.Schema({
     tokenExp: {
         type: Number
     }
-})
+});
 
 // 몽구스 모델 만들기(콜렉션Name, 스키마)
 const User = mongoose.model('User',userSchema)
 // 밖으로 내보내야 함
-module.exportㄴ = { User }
+module.exports = { User }
