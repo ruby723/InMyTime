@@ -16,16 +16,20 @@ app.use(bodyParser.urlencoded({extended: true}))
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-app.post('/api/users/register', (req,res) => {
+app.get('/',(req,res) => {
+    res.json({"hello~~~~":"Hi ~~~"})
+})
+
+app.post('/api/users/register', async (req,res) => {
     const user = new User(req.body)
 
-    user.save((err, userData) => {
-        if(err) return res.json({success: false, err})
-    })
-
-    return res.status(200).json({
-        success: true
-    });
+    const result = await user.save().then(()=>{
+        res.status(200).json({
+          success: true
+        })
+      }).catch((err)=>{
+        res.json({ success: false, err })
+      })
 })
 
 
