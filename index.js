@@ -7,9 +7,22 @@ const cookieParser = require('cookie-parser')
 const config = require('./config/key')
 
 const { User } = require('./model/user')
+const { Auth } = require('./middleware/auth')
 
-mongoose.connect(config.mongoURI
-    , {useNewUrlParser: true}).then(() => console.log('DB connected'))
+
+app.get("/api/user/auth", (req,res) => {
+    res.status(200).json({
+        _id: req._id,
+        isAuth: true,
+        email: req.user.email,
+        name: req.user.name,
+        lastname: req.user.lastname,
+        role: req.user.role
+    })
+})
+
+
+mongoose.connect(config.mongoURI).then(() => console.log('DB connected'))
                                 .catch(err => console.error(err));
 
 app.use(bodyParser.urlencoded({extended: true}))
@@ -30,6 +43,36 @@ app.post('/api/users/register', async (req,res) => {
       }).catch((err)=>{
         res.json({ success: false, err })
       })
+})
+
+app.post('/api/user/login', async(req, res) => {
+    //find the email
+    const user = new User(await User.findOne({email: req.body.email}));
+
+    if(user != null) {
+        // 비밀번호 비교
+        user.comparePassword(req.body.password, (err, isMatch) => {
+            if(err) return res.status(400).send(err);
+            if(!isMatch) {
+                return res.json({loginSuccess: false, message:"비밀번호가 일치하지 않습니다."})
+            }
+        })
+        
+        // generate token 생성 및 등록
+        user.generateToken((err, user) => {
+            if(err) return res.status(400).send(err);
+
+            // token을 쿠키에 넣기
+            res.cookie("x_auth", user.token)
+            .status(200)
+            .json({loginSuccess: true, user:user.token});
+        })
+    } else {
+        return res.json({loginSuccess: false, message: "이메일 정보를 찾을 수 없습니다."});
+    }
+    
+    
+
 })
 
 
