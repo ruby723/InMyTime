@@ -10,13 +10,10 @@ let auth = (req, res, next) => {
             error: true
         });
 
-
         req.token = token;
         req.user = user;
-
+        next();
     });
-
-
 }
 
 module.exports = { auth };

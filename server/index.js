@@ -7,10 +7,10 @@ const cookieParser = require('cookie-parser')
 const config = require('./config/key')
 
 const { User } = require('./model/user')
-const { Auth } = require('./middleware/auth')
+const { auth } = require('./middleware/auth')
 
 
-app.get("/api/user/auth", (req,res) => {
+app.get("/api/user/auth",auth, (req,res) => {
     res.status(200).json({
         _id: req._id,
         isAuth: true,
@@ -70,10 +70,18 @@ app.post('/api/user/login', async(req, res) => {
     } else {
         return res.json({loginSuccess: false, message: "이메일 정보를 찾을 수 없습니다."});
     }
-    
-    
-
 })
 
+app.get("/api/user/logout", auth, (req,res) => {
+    User.findOneAndUpdate({id:req.user._id}, {token:""}).then((doc) => {
+        return res.status(200).send({success:true});
+    }).catch((err) => {
+        return res.json({success:false, err});
+    })
+})
 
-app.listen(5000);
+const port = process.env.PORT || 5000
+
+app.listen(port, () => {
+    console.log(`Server Running at ${port}`);
+});

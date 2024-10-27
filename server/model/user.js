@@ -74,20 +74,15 @@ userSchema.methods.generateToken = async function(cb) {
     }).catch((err) => {
         return cb(err);
     })
-    // user.save(function(err, user){
-    //     if(err) return cb(err)
-    //     cb(null, user);
-    // })
 }
 
-userSchema.static.findByToken = function(token, cb) {
+userSchema.statics.findByToken = function(token, cb) {
     var user = this;
 
     jwt.verify(token, 'seceret', function(err, decode) {
-        user.findOne({"id":decode, "token": token}, function(err, user) {
-            if(err) return cb(err);
-            cb(null, user);
-        })
+        user.findOne({"id":decode, "token": token}).then(()=>{
+            return cb(null, user);
+        }).catch((err)=> {return cb(err)})
     })
 }
 
